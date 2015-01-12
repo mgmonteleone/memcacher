@@ -30,7 +30,7 @@ def getcontent(baseurl, uri):
     if resource.getcode() not in [404,500]:
         meta = resource.info()
         try:
-            log.OKBLUE( "Retrieved " + str((int(meta.getheaders("Content-Length")[0])/1000)) + "kB")
+            print( "Retrieved " + str((int(meta.getheaders("Content-Length")[0])/1000)) + "kB")
             size = int(meta.getheaders("Content-Length")[0])
             contenttype = meta.getheaders("Content-Type")[0]
         except IOError:
@@ -55,13 +55,13 @@ def putitemincache(baseurl, uri, expires, prefix):
     """
 # First delete the item from memcache
     for key, value in mcservers.iteritems():
-            log.OKBLUE( "Processing Server: " + key + " port " + str(value))
+            print "Processing Server: " + key + " port " + str(value)
             try:
                 mc = Client((key, value))
             except IOError:
                 raise
             try:
-                log.WARNING( "Deleting " + prefix+uri)
+                print "Deleting " + prefix+uri
                 mc.delete(prefix+uri)
             except IOError:
                 raise
@@ -69,19 +69,19 @@ def putitemincache(baseurl, uri, expires, prefix):
     contentitem = getcontent(baseurl, uri)
     if contentitem.size > 0:
         for key, value in mcservers.iteritems():
-            log.OKBLUE( "Processing Server: " + key + " port " + str(value) )
+            print "Processing Server: " + key + " port " + str(value)
             try:
                 mc = Client((key, value))
             except IOError:
                 raise
             try:
-                log.OKGREEN( "Setting " + prefix+contentitem.uri)
+                print "Setting " + prefix+contentitem.uri
                 mc.set(prefix+contentitem.uri, contentitem.content, expires)
             except IOError:
                 raise
         return contentitem.content
     else:
-        log.FAIL( "The item with uri: "+ uri + " could not be retrieved")
+        print "The item with uri: "+ uri + " could not be retrieved"
         return
 
 def putitemsincache(baseurl, uris):
@@ -93,7 +93,7 @@ def putitemsincache(baseurl, uris):
     """
     try:
         for uri in uris:
-            log.HEADER( "Processing " + uri)
+            print "Processing " + uri
             putitemincache(baseurl, uri, config["expire_secs"])
     except IOError:
         raise
