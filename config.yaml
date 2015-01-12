@@ -13,4 +13,5 @@ mcservers:
     memcache1 : 11211
     memcache2 : 11211
 expire_secs: 60
+fetchtimeout: 5
 

@@ -1,15 +1,16 @@
 __author__ = 'mgm'
 import sys
-import urllib2
+import urllib
 import yaml
 import json
-from libs.pymemcache.client import Client
+import log
+import requests
+from pymemcache.client import Client
 
 
 class CustomException(Exception):
     def __init__(self, value):
         self.parameter = value
-
     def __str__(self):
         return repr(self.parameter)
 
@@ -21,8 +22,7 @@ try:
 
 except IOError, (instance):
     raise CustomException("Could not find the required configuration file expected at /etc/memcacher/config.yaml")
-    print "Configuration Error !!" + instance.parameter
-
+    print "Configuration Error !!" +instance.parameter
 
 class ContentItem(object):
     def __init__(self, uri, content, size, contenttype):
@@ -40,25 +40,20 @@ def getcontent(baseurl, uri):
     :return:
     """
     print("Retrieving url: " + baseurl + uri)
-    try:
-        resource = urllib2.urlopen(baseurl + uri, None, config["fetchtimeout"])
-    except IOError:
-        print "--Timed out when retrieving item, consider lengthening timeout.--"
-        return ContentItem(uri, None, 0, None)
-    if resource.getcode() not in [404, 500]:
-        meta = resource.info()
+    resource = requests.get(baseurl + uri, timeout=3)
+    if resource.status_code != requests.codes.ok:
+        headers = resource.headers
         try:
-            print( "Retrieved " + str((int(meta.getheaders("Content-Length")[0]) / 1000)) + "kB")
-            size = int(meta.getheaders("Content-Length")[0])
-            contenttype = meta.getheaders("Content-Type")[0]
-            content = resource.read()
-            return ContentItem(uri, content, size, contenttype)
-        except :
-            print "--Could not parse the received object, length or contenttype was bad...--"
-            return ContentItem(uri, None, 0, None)
+            print( "Retrieved " + str((int(headers("content-length")[0])/1000)) + "kB")
+            size = int(headers("content-length")[0])
+            contenttype = headers("content-type")[0]
+        except requests.exceptions.Timeout:
+            log.WARNING("Could not retrive withing timeout setting, skipping")
+        content = resource.text
+        return ContentItem(uri, content, size,contenttype)
     else:
-        print( "----Can not retrieve resource----")
-    return ContentItem(uri, None, 0, None)
+        log.FAIL( "Can not retrieve resource")
+        return ContentItem(uri, None, 0, None )
 
 
 def putitemincache(baseurl, uri, expires, prefix):
@@ -72,19 +67,19 @@ def putitemincache(baseurl, uri, expires, prefix):
     :param prefix: the prefix to append to the uri to create the key in memcached, this is the key that needs to be appended in NGINX
     :return: Returns the content of the item retrieved, to enable integration to LB.
     """
-    # First delete the item from memcache
+# First delete the item from memcache
     for key, value in mcservers.iteritems():
-        print "Processing Server: " + key + " port " + str(value)
-        try:
-            mc = Client((key, value))
-        except IOError:
-            raise
-        try:
-            print "Deleting " + prefix + uri
-            mc.delete(prefix + uri)
-        except IOError:
-            raise
-        # Then go get the content item
+            print "Processing Server: " + key + " port " + str(value)
+            try:
+                mc = Client((key, value))
+            except IOError:
+                raise
+            try:
+                print "Deleting " + prefix+uri
+                mc.delete(prefix+uri)
+            except IOError:
+                raise
+# Then go get the content item
     contentitem = getcontent(baseurl, uri)
     if contentitem.size > 0:
         for key, value in mcservers.iteritems():
@@ -94,15 +89,14 @@ def putitemincache(baseurl, uri, expires, prefix):
             except IOError:
                 raise
             try:
-                print "Setting " + prefix + contentitem.uri
-                mc.set(prefix + contentitem.uri, contentitem.content, expires)
+                print "Setting " + prefix+contentitem.uri
+                mc.set(prefix+contentitem.uri, contentitem.content, expires)
             except IOError:
                 raise
         return contentitem.content
     else:
-        print "----The item with uri: " + uri + " could not be retrieved----"
+        print "The item with uri: "+ uri + " could not be retrieved"
         return
-
 
 def putitemsincache(baseurl, uris):
     """
