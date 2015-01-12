@@ -1,0 +1,33 @@
+---
+http://tst.dalmacijanews.hr:
+    prefix : dn
+    uris:
+        /js/build/app.min.js : 6000
+        /css/style.min.css : 6000
+        / : 60
+        /clanak/rq1n-pogledajte-prekrasno-podzemlje-otoka-braca : 120
+        /vijesti : 120
+        /vijesti/ : 120
+        /sport/ : 120
+        /sport : 120
+        /magazin/ : 120
+        /magazin : 120
+        /crnakronika/ : 120
+        /crnakronika : 120
+
+
+http://www.aut-aut.hr:
+    prefix: aa
+    uris:
+        / : 60000
+        /style.min.css: 90000
+        /index.min.js: 90000
+        /content.details.js : 90000
+        /res/jquery.mobile-1.1.0.min.js : 90000
+        /jquery.magnific-popup.min.js : 90000
+        /index.html : 7000
+mcservers:
+    dkr4.aut-aut.rocks : 11211
+    dkr3.aut-aut.rocks : 11211
+expire_secs: 60
+
