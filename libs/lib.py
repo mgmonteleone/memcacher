@@ -25,7 +25,7 @@ def getcontent(baseurl, uri):
     :param uri: the uri to be retrieved
     :return:
     """
-    log.HEADER("Retrieving url: " + baseurl + uri)
+    print("Retrieving url: " + baseurl + uri)
     resource = urllib.urlopen(baseurl + uri)
     if resource.getcode() not in [404,500]:
         meta = resource.info()
