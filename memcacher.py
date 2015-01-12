@@ -1,6 +1,15 @@
 #!/usr/bin/python
 from libs import lib
 import getopt, sys
+import logging
+import logging.handlers
+
+syslogger = logging.getLogger('syslogger')
+syslogger.setLevel(logging.DEBUG)
+
+handler = logging.handlers.SysLogHandler(address = '/dev/log')
+
+syslogger.addHandler(handler)
 
 
 def putincacheforsite(siteurl):
@@ -10,6 +19,7 @@ def putincacheforsite(siteurl):
     :param siteurl: The full site url (with http:// or https://)
     :raise KeyError: If
     """
+    syslogger.debug("....Starting Memcached Fetch....")
     print siteurl
     try:
         uris = lib.config[siteurl]["uris"]
@@ -21,7 +31,7 @@ def putincacheforsite(siteurl):
 
     for key, value in uris.iteritems():
         lib.putitemincache(siteurl, key, value, prefix)
-
+    syslogger.debug("....Comleted Memcache Fetch....")
 def main(argv):
     siteurl = ''
     try:
