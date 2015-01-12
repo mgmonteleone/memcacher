@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name='memcacher',
-    version='1.0.0',
+    version='1.0.2',
     packages=['libs'],
     url='www.aut-aut.hr',
     license='Apache',
