@@ -35,15 +35,15 @@ def putincacheforsite(siteurl):
 def main(argv):
     siteurl = ''
     try:
-      opts, args = getopt.getopt(argv,"hs:",["siteurl="])
+      opts, args = getopt.getopt(argv,"h",["siteurl="])
     except getopt.GetoptError:
       print bcolors.WARNING +'memcacher.py -s <siteurl>' + bcolors.ENDC
       sys.exit(2)
     for opt, arg in opts:
       if opt == '-h':
-         print bcolors.WARNING +'memcacher.py -s <siteurl>' + bcolors.ENDC
+         print bcolors.OKGREEN +'memcacher.py -s <siteurl>' + bcolors.ENDC
          sys.exit()
-      elif opt in ("-s", "--siteurl"):
+      elif opt in ("--siteurl"):
          siteurl = arg
     putincacheforsite(siteurl)
 
