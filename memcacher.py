@@ -37,11 +37,11 @@ def main(argv):
     try:
       opts, args = getopt.getopt(argv,"h",["siteurl="])
     except getopt.GetoptError:
-      print bcolors.WARNING +'memcacher.py -s <siteurl>' + bcolors.ENDC
+      print bcolors.WARNING +'memcacher.py --siteurl <siteurl>' + bcolors.ENDC
       sys.exit(2)
     for opt, arg in opts:
       if opt == '-h':
-         print bcolors.OKGREEN +'memcacher.py -s <siteurl>' + bcolors.ENDC
+         print bcolors.OKGREEN +'memcacher.py --siteurl <siteurl>' + bcolors.ENDC
          sys.exit()
       elif opt in ("--siteurl"):
          siteurl = arg
