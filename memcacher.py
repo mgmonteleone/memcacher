@@ -1,5 +1,5 @@
 #!/usr/bin/python
-from libs import lib, log
+from libs import lib
 import getopt, sys
 
 
@@ -27,11 +27,11 @@ def main(argv):
     try:
       opts, args = getopt.getopt(argv,"h",["siteurl="])
     except getopt.GetoptError:
-      log.warn('memcacher.py --siteurl <siteurl>')
+      print('memcacher.py --siteurl <siteurl>')
       sys.exit(2)
     for opt, arg in opts:
       if opt == '-h':
-          log.OKGREEN('memcacher.py --siteurl <siteurl>')
+          print('memcacher.py --siteurl <siteurl>')
           sys.exit()
       elif opt in ("--siteurl"):
          siteurl = arg

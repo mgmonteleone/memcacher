@@ -1,14 +1,28 @@
 __author__ = 'mgm'
 import sys
-import urllib
+import urllib2
 import yaml
 import json
-import log
-from pymemcache.client import Client
+from libs.pymemcache.client import Client
 
-configfile = open("/etc/memcacher/config.yaml", "r")
-config = yaml.load(configfile)
-mcservers = config["mcservers"]
+
+class CustomException(Exception):
+    def __init__(self, value):
+        self.parameter = value
+
+    def __str__(self):
+        return repr(self.parameter)
+
+
+try:
+    configfile = open("/etc/memcacher/config.yaml", "r")
+    config = yaml.load(configfile)
+    mcservers = config["mcservers"]
+
+except IOError, (instance):
+    raise CustomException("Could not find the required configuration file expected at /etc/memcacher/config.yaml")
+    print "Configuration Error !!" + instance.parameter
+
 
 class ContentItem(object):
     def __init__(self, uri, content, size, contenttype):
@@ -26,20 +40,20 @@ def getcontent(baseurl, uri):
     :return:
     """
     print("Retrieving url: " + baseurl + uri)
-    resource = urllib.urlopen(baseurl + uri)
-    if resource.getcode() not in [404,500]:
+    resource = urllib2.urlopen(baseurl + uri, None, 3)
+    if resource.getcode() not in [404, 500]:
         meta = resource.info()
         try:
-            print( "Retrieved " + str((int(meta.getheaders("Content-Length")[0])/1000)) + "kB")
+            print( "Retrieved " + str((int(meta.getheaders("Content-Length")[0]) / 1000)) + "kB")
             size = int(meta.getheaders("Content-Length")[0])
             contenttype = meta.getheaders("Content-Type")[0]
         except IOError:
             raise
         content = resource.read()
-        return ContentItem(uri, content, size,contenttype)
+        return ContentItem(uri, content, size, contenttype)
     else:
-        log.FAIL( "Can not retrieve resource")
-        return ContentItem(uri, None, 0, None )
+        print( "----Can not retrieve resource----")
+    return ContentItem(uri, None, 0, None)
 
 
 def putitemincache(baseurl, uri, expires, prefix):
@@ -53,19 +67,19 @@ def putitemincache(baseurl, uri, expires, prefix):
     :param prefix: the prefix to append to the uri to create the key in memcached, this is the key that needs to be appended in NGINX
     :return: Returns the content of the item retrieved, to enable integration to LB.
     """
-# First delete the item from memcache
+    # First delete the item from memcache
     for key, value in mcservers.iteritems():
-            print "Processing Server: " + key + " port " + str(value)
-            try:
-                mc = Client((key, value))
-            except IOError:
-                raise
-            try:
-                print "Deleting " + prefix+uri
-                mc.delete(prefix+uri)
-            except IOError:
-                raise
-# Then go get the content item
+        print "Processing Server: " + key + " port " + str(value)
+        try:
+            mc = Client((key, value))
+        except IOError:
+            raise
+        try:
+            print "Deleting " + prefix + uri
+            mc.delete(prefix + uri)
+        except IOError:
+            raise
+        # Then go get the content item
     contentitem = getcontent(baseurl, uri)
     if contentitem.size > 0:
         for key, value in mcservers.iteritems():
@@ -75,14 +89,15 @@ def putitemincache(baseurl, uri, expires, prefix):
             except IOError:
                 raise
             try:
-                print "Setting " + prefix+contentitem.uri
-                mc.set(prefix+contentitem.uri, contentitem.content, expires)
+                print "Setting " + prefix + contentitem.uri
+                mc.set(prefix + contentitem.uri, contentitem.content, expires)
             except IOError:
                 raise
         return contentitem.content
     else:
-        print "The item with uri: "+ uri + " could not be retrieved"
+        print "----The item with uri: " + uri + " could not be retrieved----"
         return
+
 
 def putitemsincache(baseurl, uris):
     """
