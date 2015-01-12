@@ -3,12 +3,12 @@ import sys
 import urllib
 import yaml
 import json
+import log
 from pymemcache.client import Client
 
 configfile = open("./config.yaml", "r")
 config = yaml.load(configfile)
 mcservers = config["mcservers"]
-
 
 class ContentItem(object):
     def __init__(self, uri, content, size, contenttype):
@@ -25,12 +25,12 @@ def getcontent(baseurl, uri):
     :param uri: the uri to be retrieved
     :return:
     """
-    print "Retrieving url: " + baseurl + uri
+    log.HEADER("Retrieving url: " + baseurl + uri)
     resource = urllib.urlopen(baseurl + uri)
     if resource.getcode() not in [404,500]:
         meta = resource.info()
         try:
-            print "Retrieved " + str((int(meta.getheaders("Content-Length")[0])/1000)) + "kB"
+            log.OKBLUE( "Retrieved " + str((int(meta.getheaders("Content-Length")[0])/1000)) + "kB")
             size = int(meta.getheaders("Content-Length")[0])
             contenttype = meta.getheaders("Content-Type")[0]
         except IOError:
@@ -38,7 +38,7 @@ def getcontent(baseurl, uri):
         content = resource.read()
         return ContentItem(uri, content, size,contenttype)
     else:
-        print "Can not retrieve resource"
+        log.FAIL( "Can not retrieve resource")
         return ContentItem(uri, None, 0, None )
 
 
@@ -55,13 +55,13 @@ def putitemincache(baseurl, uri, expires, prefix):
     """
 # First delete the item from memcache
     for key, value in mcservers.iteritems():
-            print "Processing Server: " + key + " port " + str(value)
+            log.OKBLUE( "Processing Server: " + key + " port " + str(value))
             try:
                 mc = Client((key, value))
             except IOError:
                 raise
             try:
-                print "Deleting " + prefix+uri
+                log.WARNING( "Deleting " + prefix+uri)
                 mc.delete(prefix+uri)
             except IOError:
                 raise
@@ -69,19 +69,19 @@ def putitemincache(baseurl, uri, expires, prefix):
     contentitem = getcontent(baseurl, uri)
     if contentitem.size > 0:
         for key, value in mcservers.iteritems():
-            print "Processing Server: " + key + " port " + str(value)
+            log.OKBLUE( "Processing Server: " + key + " port " + str(value) )
             try:
                 mc = Client((key, value))
             except IOError:
                 raise
             try:
-                print "Setting " + prefix+contentitem.uri
+                log.OKGREEN( "Setting " + prefix+contentitem.uri)
                 mc.set(prefix+contentitem.uri, contentitem.content, expires)
             except IOError:
                 raise
         return contentitem.content
     else:
-        print "The item with uri: "+ uri + " could not be retrieved"
+        log.FAIL( "The item with uri: "+ uri + " could not be retrieved")
         return
 
 def putitemsincache(baseurl, uris):
@@ -93,7 +93,7 @@ def putitemsincache(baseurl, uris):
     """
     try:
         for uri in uris:
-            print "Processing " + uri
+            log.HEADER( "Processing " + uri)
             putitemincache(baseurl, uri, config["expire_secs"])
     except IOError:
         raise

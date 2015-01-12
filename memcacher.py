@@ -1,16 +1,6 @@
 #!/usr/bin/python
-from libs import lib
+from libs import lib, log
 import getopt, sys
-
-class bcolors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
 
 
 def putincacheforsite(siteurl):
@@ -27,7 +17,7 @@ def putincacheforsite(siteurl):
         if uris is None:
             raise KeyError
     except KeyError:
-        print bcolors.FAIL + "The site " + siteurl + " was not found in config, or no URIs are defined" + bcolors.ENDC
+        log.FAIL("The site " + siteurl + " was not found in config, or no URIs are defined")
 
     for key, value in uris.iteritems():
         lib.putitemincache(siteurl, key, value, prefix)
@@ -37,12 +27,12 @@ def main(argv):
     try:
       opts, args = getopt.getopt(argv,"h",["siteurl="])
     except getopt.GetoptError:
-      print bcolors.WARNING +'memcacher.py --siteurl <siteurl>' + bcolors.ENDC
+      log.warn('memcacher.py --siteurl <siteurl>')
       sys.exit(2)
     for opt, arg in opts:
       if opt == '-h':
-         print bcolors.OKGREEN +'memcacher.py --siteurl <siteurl>' + bcolors.ENDC
-         sys.exit()
+          log.OKGREEN('memcacher.py --siteurl <siteurl>')
+          sys.exit()
       elif opt in ("--siteurl"):
          siteurl = arg
     putincacheforsite(siteurl)
