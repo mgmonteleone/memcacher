@@ -27,7 +27,7 @@ def putincacheforsite(siteurl):
         if uris is None:
             raise KeyError
     except KeyError:
-        print "The site " + siteurl + " was not found in config, or no URIs are defined"
+        print bcolors.FAIL + "The site " + siteurl + " was not found in config, or no URIs are defined" + bcolors.ENDC
 
     for key, value in uris.iteritems():
         lib.putitemincache(siteurl, key, value, prefix)
