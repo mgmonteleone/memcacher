@@ -1,15 +1,23 @@
 #!/usr/bin/python
 from libs import lib
-from libs.lib import print_error, print_ok, print_warn
+from libs.lib import print_error, print_ok, print_warn, datadogenabled,logto
 import getopt, sys
 import logging
 import logging.handlers
+from libs.tendo import singleton
+import time
+from libs import statsd
+#Set up logging
 syslogger = logging.getLogger('syslogger')
 syslogger.setLevel(logging.DEBUG)
-#handler = logging.handlers.SysLogHandler(address = '/dev/log')
-handler = logging.handlers.WatchedFileHandler("log.log")
-syslogger.addHandler(handler)
+if logto == "syslog":
+    handler = logging.handlers.SysLogHandler(address = '/dev/log')
+    syslogger.addHandler(handler)
+elif logto != "None":
+    handler = logging.handlers.WatchedFileHandler("logto")
+    syslogger.addHandler(handler)
 
+me = singleton.SingleInstance()
 
 def putincacheforsite(siteurl):
     """
@@ -18,6 +26,7 @@ def putincacheforsite(siteurl):
     :param siteurl: The full site url (with http:// or https://)
     :raise KeyError: If
     """
+
     syslogger.debug("....Starting Memcached Fetch....")
     print siteurl
     try:
@@ -34,6 +43,7 @@ def putincacheforsite(siteurl):
     syslogger.debug("....Comleted Memcache Fetch....")
 def main(argv):
     siteurl = ''
+
     try:
       opts, args = getopt.getopt(argv,"h",["siteurl="])
     except getopt.GetoptError:
@@ -42,10 +52,18 @@ def main(argv):
     for opt, arg in opts:
       if opt == '-h':
           print_warn('memcacher.py --siteurl <siteurl>')
+          time.sleep(20)
           sys.exit()
       elif opt in ("--siteurl"):
-         siteurl = arg
-    putincacheforsite(siteurl)
+        siteurl = arg
+        start_time=time.time()
+        putincacheforsite(siteurl)
+        duration = time.time() - start_time
+        tags = 'siteurl: '+ siteurl
+        if datadogenabled == True:
+            print "Informing DataDog"
+            statsd.statsd.histogram('memcacher.run_duration',duration,tags=[tags])
+            statsd.statsd.event("Memcacher Run","Memcacher Ran for "+siteurl,alert_type="info",priority="low")
 
 if __name__ == "__main__":
    main(sys.argv[1:])
