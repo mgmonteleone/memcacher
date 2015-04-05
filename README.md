@@ -12,6 +12,13 @@ NGINX goes a great job of serving directly out of memcached, but if you are in D
 
 Hack it, of course, elegantly (i hope).
 
+#Features
+* Simple configuration of sites and uris through yaml
+* Configurable timeouts
+* Support for multiple servers
+* [Datadog](https://www.datadoghq.com/) instrumentation support
+* Logging to syslog support
+
 
 # Configuration
 The script uses a config.yaml file in the root folder. In this file ,multiple sites can be defined as well defining the array of memcache servers you want to write to.
@@ -31,7 +38,10 @@ http://www.aut-aut.hr:
 mcservers:
     memcache1 : 11211
     memcache2 : 11211
-expire_secs: 60
+fetchtimeout : 5
+datadogenabled : True
+# Either "syslog" or a file path with filename to log, or "None" for no logging
+logto : logging.log
 
 
 ```
@@ -39,7 +49,13 @@ expire_secs: 60
 * a prefix is designated for the site, which will be appended to the uri, to ensure they are unique
 * a list of tuples for each resource to be memcached, specify the uri, with the memcache expiry time (in seconds) as the send parameter.
 * The mcservers section allows you to list multiple memcache servers with their port. Assets will be written to all servers listed.
-* The expire secs paramter, is not used currently, but if you directly call some of the functions in the code, it is used.
+* fetchtimeout set the number of seconds to wait before giving up on retreiving a uri.
+* datadogenabled : Set to true to send metrics to your datadog implementation. All metrics are tagged with the siteurl tag, to allow you to analyze by site.
+    * memcacher.cached_page : Number of pages cached
+    * memcacher.cached_bytes : number of bytes cached
+    * memcacher.run_duration : time in seconds it takes to run memcacher
+* logto, Either "syslog" or a file path with filename to log, or "None" for no logging.
+
 
 # Usage
 Called from the command line (should run on all platforms Python does), only one paramter is needed --siteurl. This needs to match the baseurl specified in the config.yaml.
