@@ -1,4 +1,35 @@
 ---
+http://www.dalmacijanews.hr:
+    prefix : dn
+    uris:
+        /js/build/app.min.js : 6000
+        /vijesti : 200
+        /vijesti/ : 200
+        /vijesti/hrvatska/ : 200
+        /vijesti/svijet/ : 200
+        /vijesti/biznis/ : 200
+        /vijesti/znanost/ : 200
+        /sport/ : 200
+        /sport/split/ : 200
+        /sport/hajduk/ : 200
+        /sport/nogomet/ : 200
+        /sport/ostalisportovi/ : 200
+        /sport : 200
+        /magazin/ : 200
+        /magazin : 200
+        /crnakronika/ : 200
+        /crnakronika : 200
+        /kolumne/ : 200
+        "/css/style.min.css?v=0.6.4" : 6000 
+http://www.hzzo.hr:
+    prefix : hz
+    uris:
+        /obavijest-osiguranicima-dopunskog-zdravstvenog-osiguranja: 600
+        / : 600
+        /dopunsko-zdravstveno-osiguranje : 600
+        /dopunsko-zdravstveno-osiguranje/novosti : 600
+
+
 http://www.aut-aut.hr:
     prefix: aa
     uris:
@@ -10,8 +41,10 @@ http://www.aut-aut.hr:
         /jquery.magnific-popup.min.js : 90000
         /index.html : 7000
 mcservers:
-    memcache1 : 11211
-    memcache2 : 11211
+    aa-gce-dkr-003 : 11211
+    aa-gce-dkr-004 : 11211
 expire_secs: 60
-fetchtimeout: 5
-
+fetchtimeout : 7
+datadogenabled : True
+# Either "syslog" or a file path with filename to log, or "None" for no logging
+logto : syslog

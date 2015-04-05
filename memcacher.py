@@ -62,8 +62,12 @@ def main(argv):
         tags = 'siteurl: '+ siteurl
         if datadogenabled == True:
             print "Informing DataDog"
-            statsd.statsd.histogram('memcacher.run_duration',duration,tags=[tags])
-            statsd.statsd.event("Memcacher Run","Memcacher Ran for "+siteurl,alert_type="info",priority="low")
+	    try:
+                statsd.statsd.connection(host="aa-gce-dkr-004")
+                statsd.statsd.histogram('memcacher.run_duration',duration,tags=[tags])
+                statsd.statsd.event("Memcacher Run","Memcacher Ran for "+siteurl,alert_type="info",priority="low")
+            except Exception as e:
+                print "Could not send stats: "+e.message 
 
 if __name__ == "__main__":
    main(sys.argv[1:])
