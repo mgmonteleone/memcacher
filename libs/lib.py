@@ -49,19 +49,29 @@ def getcontent(baseurl, uri):
     print_info("Retrieving url: " + baseurl + uri)
     try:
         resource = urllib2.urlopen(baseurl + uri, None, config["fetchtimeout"])
-    except IOError:
+    except IOError as e:
+        print e.message
         print_error( "--Timed out when retrieving item, consider lengthening timeout.--")
+
         return ContentItem(uri, None, 0, None)
     if resource.getcode() not in [404, 500]:
         meta = resource.info()
         try:
-            print_ok( "Retrieved " + str((int(meta.getheaders("Content-Length")[0]) / 1000)) + "kB")
-            size = int(meta.getheaders("Content-Length")[0])
-            contenttype = meta.getheaders("Content-Type")[0]
             content = resource.read()
+            try:
+                size = int(meta.getheaders("Content-Length")[0])
+            except:
+                size = len(content)/1000
+            try:
+                contenttype = meta.getheaders("Content-Type")[0]
+            except:
+                contenttype = "text/html"
+
+            print_ok( "Retrieved " + str(size) + "kB")
             return ContentItem(uri, content, size, contenttype)
-        except :
+        except Exception as e:
             print_warn("--Could not parse the received object, length or contenttype was bad...--")
+            print_warn(e.message)
             return ContentItem(uri, None, 0, None)
     else:
         print_warn("----Can not retrieve resource----")

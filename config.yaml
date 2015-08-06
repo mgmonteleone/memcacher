@@ -45,6 +45,6 @@ mcservers:
     aa-gce-dkr-004 : 11211
 expire_secs: 60
 fetchtimeout : 7
-datadogenabled : True
+datadogenabled : False
 # Either "syslog" or a file path with filename to log, or "None" for no logging
 logto : syslog
