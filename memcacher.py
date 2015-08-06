@@ -63,7 +63,6 @@ def main(argv):
         if datadogenabled == True:
             print "Informing DataDog"
 	    try:
-                statsd.statsd.connection(host="aa-gce-dkr-004")
                 statsd.statsd.histogram('memcacher.run_duration',duration,tags=[tags])
                 statsd.statsd.event("Memcacher Run","Memcacher Ran for "+siteurl,alert_type="info",priority="low")
             except Exception as e:

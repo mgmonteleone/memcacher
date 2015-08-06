@@ -3,6 +3,7 @@ import sys
 import urllib2
 import yaml
 import json
+from libs import statsd
 from libs.pymemcache.client import Client
 from libs.termcolor import colored, cprint
 print_error = lambda x: cprint(x,"red","on_grey")
@@ -22,6 +23,8 @@ try:
     configfile = open("/etc/memcacher/config.yaml", "r")
     config = yaml.load(configfile)
     mcservers = config["mcservers"]
+    datadogenabled = config["datadogenabled"]
+    logto = config["logto"]
 
 except IOError, (instance):
     raise CustomException("Could not find the required configuration file expected at /etc/memcacher/config.yaml")
@@ -100,6 +103,11 @@ def putitemincache(baseurl, uri, expires, prefix):
             try:
                 print_ok( "Setting " + prefix + contentitem.uri)
                 mc.set(prefix + contentitem.uri, contentitem.content, expires)
+                if datadogenabled == True:
+                    #Do instrumentation
+                    tags = 'siteurl: '+ baseurl
+                    statsd.statsd.increment("memcacher.cached_bytes",contentitem.size,tags=[tags])
+                    statsd.statsd.increment("memcacher.cached_page",1,tags=[tags])
             except IOError:
                 raise
         return contentitem.content
