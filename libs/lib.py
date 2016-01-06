@@ -32,23 +32,23 @@ except IOError, (instance):
 
 
 class ContentItem(object):
-    def __init__(self, uri, content, size, contenttype):
+    def __init__(self, uri, content=None, size=None, contenttype=None):
         self.uri = uri
         self.content = content
         self.size = size
         self.contenttype = contenttype
 
 
-def getcontent(baseurl, uri):
+def getcontent(upstream, uri):
     """
     Retrieves a file from the given url, from the defined base url.
     :rtype : ContentItem(object)
     :param uri: the uri to be retrieved
     :return:
     """
-    print_info("Retrieving url: " + baseurl + uri)
+    print_info("Retrieving url: " + upstream + uri)
     try:
-        resource = urllib2.urlopen(baseurl + uri, None, config["fetchtimeout"])
+        resource = urllib2.urlopen(upstream + uri, None, config["fetchtimeout"])
     except IOError as e:
         print e.message
         print_error( "--Timed out when retrieving item, consider lengthening timeout.--")
@@ -78,32 +78,33 @@ def getcontent(baseurl, uri):
     return ContentItem(uri, None, 0, None)
 
 
-def putitemincache(baseurl, uri, expires, prefix):
+def putitemincache(baseurl, upstream, uri, expires, prefix):
     """
     Puts a single content item, specified by a uri, into the designated
 
     :rtype : str
     :param baseurl: The base of the query
+    :param upstream: The upstream base to pull from
     :param uri: the uri of the resource to retrieve and store
     :param expires: object expiration time, in seconds
     :param prefix: the prefix to append to the uri to create the key in memcached, this is the key that needs to be appended in NGINX
     :return: Returns the content of the item retrieved, to enable integration to LB.
     """
-    # First delete the item from memcache
-    for key, value in mcservers.iteritems():
-        print("Processing Server: " + key + " port " + str(value))
-        try:
-            mc = Client((key, value))
-        except IOError:
-            raise
-        try:
-            print "Deleting " + prefix + uri
-            mc.delete(prefix + uri)
-        except IOError:
-            raise
-        # Then go get the content item
-    contentitem = getcontent(baseurl, uri)
+    # Lets retrieve the item first....
+    contentitem = getcontent(upstream=upstream, uri=uri)
     if contentitem.size > 0:
+        # First delete the item from memcache
+        for key, value in mcservers.iteritems():
+            print("Processing Server: " + key + " port " + str(value))
+            try:
+                mc = Client((key, value))
+            except IOError:
+                raise
+            try:
+                print "Deleting " + prefix + uri
+                mc.delete(prefix + uri)
+            except IOError:
+                raise
         for key, value in mcservers.iteritems():
             print "Processing Server: " + key + " port " + str(value)
             try:

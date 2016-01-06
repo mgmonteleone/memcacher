@@ -1,10 +1,10 @@
 ---
 http://www.dalmacijanews.hr:
     prefix : dn
+    upstream: "http://dkr7.aut-aut.rocks:6055"
     uris:
-        /js/build/app.min.js : 6000
-        /vijesti : 200
-        /vijesti/ : 200
+        /vijesti/ : 600
+        /vijesti : 600
         /vijesti/hrvatska/ : 200
         /vijesti/svijet/ : 200
         /vijesti/biznis/ : 200
@@ -20,31 +20,22 @@ http://www.dalmacijanews.hr:
         /crnakronika/ : 200
         /crnakronika : 200
         /kolumne/ : 200
-        "/css/style.min.css?v=0.6.4" : 6000 
+        "/css/style.min.css?v=0.6.4" : 6000
+        /js/libs/emg.js : 6000
+
 http://www.hzzo.hr:
     prefix : hz
+    upstream : "http://dkr7.aut-aut.rocks:803"
     uris:
         /obavijest-osiguranicima-dopunskog-zdravstvenog-osiguranja: 600
         / : 600
         /dopunsko-zdravstveno-osiguranje : 600
         /dopunsko-zdravstveno-osiguranje/novosti : 600
 
-
-http://www.aut-aut.hr:
-    prefix: aa
-    uris:
-        / : 60000
-        /style.min.css: 90000
-        /index.min.js: 90000
-        /content.details.js : 90000
-        /res/jquery.mobile-1.1.0.min.js : 90000
-        /jquery.magnific-popup.min.js : 90000
-        /index.html : 7000
 mcservers:
-    aa-gce-dkr-003 : 11211
-    aa-gce-dkr-004 : 11211
+    104.155.44.59 : 11211
 expire_secs: 60
 fetchtimeout : 7
 datadogenabled : False
 # Either "syslog" or a file path with filename to log, or "None" for no logging
-logto : syslog
+logto : None

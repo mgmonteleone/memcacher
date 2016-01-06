@@ -1,12 +1,15 @@
 #!/usr/bin/python
-from libs import lib
-from libs.lib import print_error, print_ok, print_warn, datadogenabled,logto
-import getopt, sys
+import getopt
+import sys
 import logging
 import logging.handlers
-from libs.tendo import singleton
 import time
+
+from libs import lib
+from libs.lib import print_error, print_warn, datadogenabled,logto
+from libs.tendo import singleton
 from libs import statsd
+
 #Set up logging
 syslogger = logging.getLogger('syslogger')
 syslogger.setLevel(logging.DEBUG)
@@ -32,14 +35,15 @@ def putincacheforsite(siteurl):
     try:
         uris = lib.config[siteurl]["uris"]
         prefix = lib.config[siteurl]["prefix"]
+        upstream = lib.config[siteurl]["upstream"]
         if uris is None:
             raise KeyError
     except KeyError:
         print_error( "The site " + siteurl + " was not found in config, or no URIs are defined")
 
     for key, value in uris.iteritems():
-        syslogger.debug("Fetching and setting "+ siteurl+key)
-        lib.putitemincache(siteurl, key, value, prefix)
+        syslogger.debug("Fetching and setting "+ siteurl+key+" from upstream: "+upstream)
+        lib.putitemincache(siteurl,upstream, key, value, prefix)
     syslogger.debug("....Comleted Memcache Fetch....")
 def main(argv):
     siteurl = ''
