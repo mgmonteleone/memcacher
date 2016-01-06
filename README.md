@@ -18,7 +18,7 @@ Hack it, of course, elegantly (i hope).
 * Support for multiple servers
 * [Datadog](https://www.datadoghq.com/) instrumentation support
 * Logging to syslog support
-
+* Upstream can be differant than the public URL.
 
 # Configuration
 The script uses a config.yaml file in the root folder. In this file ,multiple sites can be defined as well defining the array of memcache servers you want to write to.
@@ -27,6 +27,7 @@ The script uses a config.yaml file in the root folder. In this file ,multiple si
 ---
 http://www.aut-aut.hr:
     prefix: aa
+    upstream: "http://dkr5-aut-aut.rocks:812"
     uris:
         / : 60000
         /style.min.css: 90000
@@ -46,6 +47,7 @@ logto : logging.log
 
 ```
 * The base url of the site starts the config
+* The upstream is the server to pull data, can be the same as the base url, but is usefull to set directly to upstream.
 * a prefix is designated for the site, which will be appended to the uri, to ensure they are unique
 * a list of tuples for each resource to be memcached, specify the uri, with the memcache expiry time (in seconds) as the send parameter.
 * The mcservers section allows you to list multiple memcache servers with their port. Assets will be written to all servers listed.
